@@ -29,9 +29,15 @@
 6. **A2A/MCP Agent Gateway** — Agent federation
 7. **Interface** — Next.js dashboard
 
+## Additional Modules
+- **Detection** — Contradiction and drift detection across spec sections
+- **Memory** — Sovereign memory with persona lifecycle management
+- **Grammar** — GBNF grammar files and runtime validation
+- **CLI** — Click-based command-line interface
+
 ## Non-Negotiable Constraints
 - Zero cloud dependencies
-- All secrets via environment variables
+- No secrets — filesystem-based trust
 - Tests required for every endpoint
 - Every decision produces an audit record
 - Offline-capable at all times

@@ -14,7 +14,7 @@ SpecWeave is organized into 7 layers:
 ├─────────────────────────────────────────────┤
 │  6. A2A/MCP Agent Gateway                   │
 ├─────────────────────────────────────────────┤
-│  5. Self-Verifying Compiler (6 gates)       │
+│  5. Self-Verifying Compiler (12 steps, 6 gates)│
 ├─────────────────────────────────────────────┤
 │  4. Neuro-Symbolic Knowledge Graph          │
 ├─────────────────────────────────────────────┤
@@ -44,19 +44,22 @@ All model execution via **Ollama** on localhost. Zero cloud dependency.
 | Knowledge Graph | NetworkX | Spec graph with 11 node types, 9 edge types |
 
 ### Layer 3: Speculative Reasoning
-Three-phase pipeline: **draft** alternatives → **verify** against constraints → **commit** best candidate.
+Three-phase pipeline: **draft** alternatives → **verify** against constraints → **commit** best candidate. GBNF grammar enforcement ensures LLM output conforms to expected JSON schemas.
 
 ### Layer 4: Neuro-Symbolic KG
 Hybrid loop where **neural generates** (LLM) and **symbolic validates** (NetworkX). On failure, neural revises.
 
 ### Layer 5: Self-Verifying Compiler
-6 sequential verification gates:
-1. **Completeness** — all required fields present
-2. **Consistency** — no contradictions in spec graph
-3. **Dependencies** — topological sort, no cycles
-4. **Constraints** — local-first, no-cloud, governance
-5. **Coherence** — architecture matches intent
-6. **Readiness** — modules resolvable to code patterns
+12-step pipeline across 6 sequential verification gates:
+
+| Gate | Steps | Name | Description |
+|------|-------|------|-------------|
+| 1 | 1-3 | Completeness | Parse, validate schema, extract constraints |
+| 2 | 4-5 | Consistency | Build dependency graph, detect contradictions |
+| 3 | 6-7 | Dependencies | Check drift, verify coherence |
+| 4 | 8-9 | Constraints | Resolve dependencies, generate tasks |
+| 5 | 10 | Coherence | Assign agents |
+| 6 | 11-12 | Readiness | Set priorities, commit to audit |
 
 ### Layer 6: A2A/MCP Gateway
 Dual-protocol agent federation:
@@ -65,6 +68,19 @@ Dual-protocol agent federation:
 
 ### Layer 7: Interface
 Next.js dashboard with spec visualization, speculative explorer, verification gate monitor, and agent federation status.
+
+## Trust Model
+
+SpecWeave uses **filesystem-based trust** — no JWT, no passwords, no cloud auth. Agents are identified by their presence in `.sovereignspec/agents/`. All agent interactions include an `X-Agent-Id` header that maps to a local agent directory.
+
+```bash
+# Agents are identified by their .sovereignspec/agents/ directory
+.sovereignspec/agents/
+├── opencode/
+│   └── identity.json
+└── claude/
+    └── identity.json
+```
 
 ## Quick Start
 
@@ -80,6 +96,9 @@ cd specweave
 python -m venv .venv && source .venv/bin/activate
 pip install -e ".[dev]"
 
+# Initialize a project
+specweave init
+
 # Start the server
 uvicorn specweave.main:app --reload --port 8000
 ```
@@ -89,15 +108,25 @@ uvicorn specweave.main:app --reload --port 8000
 pytest tests/ -v
 ```
 
-### Docker
+### CLI Usage
 ```bash
-docker build -t specweave .
-docker run -p 8000:8000 specweave
+specweave init                          # Initialize project
+specweave spec create --name my-proj --title "My Project"
+specweave spec list                     # List all specs
+specweave compile <spec-id>             # Run 6-gate compiler
+specweave detect <spec-id>              # Contradiction/drift detection
+specweave verify <spec-id>              # Neuro-symbolic verification
+specweave trust                         # View trust configuration
+specweave grammar                       # List GBNF grammars
+specweave graph                         # View knowledge graph
+specweave memory create-persona --agent-id my-agent --name "Architect"
+specweave audit                         # View audit trail
+specweave status                        # System status
 ```
 
 ## API Reference
 
-All endpoints under `/api/v2`. Auth via `Authorization: Bearer <jwt>`.
+All endpoints under `/api/v2`. Auth via `X-Agent-Id` header (filesystem-based trust).
 
 ### Specs
 | Method | Path | Description |
@@ -105,7 +134,7 @@ All endpoints under `/api/v2`. Auth via `Authorization: Bearer <jwt>`.
 | `GET` | `/api/v2/specs` | List all specs |
 | `POST` | `/api/v2/specs` | Create spec from `.sspec` |
 | `GET` | `/api/v2/specs/{id}` | Get spec with graph + verification |
-| `POST` | `/api/v2/specs/{id}/compile` | Run 6-gate compiler pipeline |
+| `POST` | `/api/v2/specs/{id}/compile` | Run 12-step/6-gate compiler pipeline |
 | `POST` | `/api/v2/specs/{id}/speculate` | Draft alternative architectures |
 | `POST` | `/api/v2/specs/{id}/verify` | Run neuro-symbolic verification |
 | `GET` | `/api/v2/specs/{id}/gates` | Gate-by-gate verification status |
@@ -141,6 +170,10 @@ All endpoints under `/api/v2`. Auth via `Authorization: Bearer <jwt>`.
 | `Speculation` | Architecture candidate with constraint scores |
 | `Delegation` | Sub-spec delegation to another agent |
 | `AuditRecord` | Immutable audit log entry |
+| `Contradiction` | Detected contradiction between spec sections |
+| `Drift` | Detected drift from baseline spec |
+| `Persona` | Sovereign memory persona |
+| `MemoryEntry` | Key-value memory entry for a persona |
 
 ## Project Structure
 ```
@@ -156,21 +189,52 @@ specweave/
 │   └── sovereignspec.yaml  # LLM configuration
 ├── src/specweave/
 │   ├── api/                # FastAPI route handlers
-│   ├── compiler/           # Self-verifying compiler pipeline
+│   ├── compiler/           # 12-step/6-gate compiler pipeline
+│   │   ├── steps.py        # 12 compilation steps
+│   │   ├── gates.py        # 6 verification gates
+│   │   └── pipeline.py     # Pipeline orchestrator
+│   ├── detection/          # Contradiction & drift detection
 │   ├── gateway/            # A2A/MCP handlers
+│   ├── grammar/            # GBNF grammar files + loader
+│   ├── memory/             # Sovereign memory (persona + KV store)
 │   ├── models/             # Pydantic v2 data models
 │   ├── neuro_symbolic/     # Neural + symbolic verification
 │   ├── persistence/        # SQLite, ChromaDB, NetworkX stores
 │   ├── speculative/        # Speculative reasoning engine
-│   ├── auth.py             # JWT authentication
+│   ├── cli.py              # Click CLI (specweave command)
+│   ├── trust.py            # Filesystem-based trust resolution
 │   ├── config.py           # Pydantic settings
 │   └── main.py             # FastAPI application
-├── tests/                  # pytest test suite
-│   ├── test_api.py         # API endpoint tests (18 tests)
-│   ├── test_models.py      # Data model tests (5 tests)
-│   └── test_persistence.py # Persistence layer tests (17 tests)
+├── tests/                  # pytest test suite (101 tests)
 ├── pyproject.toml
 └── specweave.sspec         # Top-level spec document
+```
+
+## GBNF Grammar Enforcement
+
+All LLM output is constrained by GBNF grammars to ensure valid JSON:
+
+| Grammar | Purpose |
+|---------|---------|
+| `sspec.gbnf` | Spec document structure |
+| `speculator.gbnf` | Speculator output (architecture candidates) |
+| `verifier.gbnf` | Verifier output (constraint scores) |
+| `compiler.gbnf` | Compiler pipeline output |
+| `audit.gbnf` | Audit record format |
+
+## Sovereign Memory
+
+SpecWeave includes a built-in sovereign memory system for agent persona management:
+
+```bash
+# Create a persona
+specweave memory create-persona --agent-id my-agent --name "Architect"
+
+# Store a memory
+specweave memory store --persona-id <id> --key "preference" --value "prefers functional style"
+
+# List memories
+specweave memory list-memories --persona-id <id>
 ```
 
 ## SovereignSpec Integration
@@ -201,8 +265,8 @@ Configuration via environment variables (prefix `SPECWEAVE_`) or `.env`:
 |----------|---------|-------------|
 | `SPECWEAVE_HOST` | `0.0.0.0` | Server bind address |
 | `SPECWEAVE_PORT` | `8000` | Server port |
-| `SPECWEAVE_SECRET_KEY` | `change-me-in-production` | JWT signing key |
 | `SPECWEAVE_OLLAMA_HOST` | `http://localhost:11434` | Ollama endpoint |
+| `SPECWEAVE_DATA_DIR` | `.sovereignspec` | Data directory |
 
 ## License
 

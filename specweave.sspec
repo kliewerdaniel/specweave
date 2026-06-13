@@ -276,7 +276,7 @@ layers:
 api_type: "fastapi"
 base_url: "/api/v2"
 auth_required: true
-auth_method: "jwt"
+auth_method: "filesystem_trust"
 
 endpoints:
   - path: "/specs"
@@ -530,9 +530,6 @@ dependencies:
   - name: "fastapi"
     version: "0.115+"
     purpose: "API backend framework"
-  - name: "sqlalchemy"
-    version: "2.0+"
-    purpose: "ORM for SQLite"
   - name: "chromadb"
     version: "0.5+"
     purpose: "Vector store for semantic search"
@@ -545,7 +542,6 @@ dependencies:
   - name: "ollama-python"
     version: "0.4+"
     purpose: "Python client for Ollama"
-  - name: "python-jose"
-    version: "3.3+"
-    purpose: "JWT authentication"
-  - name: "passlib"
+  - name: "click"
+    version: "8.0+"
+    purpose: "CLI framework"
