@@ -1,6 +1,7 @@
 from __future__ import annotations
 
-from datetime import datetime, timezone
+from datetime import datetime, timedelta, timezone
+from enum import Enum
 from typing import Any
 from uuid import uuid4
 
@@ -13,6 +14,14 @@ def _utcnow() -> datetime:
 
 def _new_id() -> str:
     return str(uuid4())
+
+
+class DelegationStatus(str, Enum):
+    pending = "pending"
+    in_progress = "in_progress"
+    completed = "completed"
+    failed = "failed"
+    timeout = "timeout"
 
 
 class Spec(BaseModel):
@@ -56,9 +65,14 @@ class Delegation(BaseModel):
     spec_id: str
     sub_spec_content: str
     target_agent: str
-    status: str = "pending"
+    status: DelegationStatus = DelegationStatus.pending
     result: str | None = None
     created_at: datetime = Field(default_factory=_utcnow)
+    ttl_seconds: int = 3600
+
+    @property
+    def is_expired(self) -> bool:
+        return datetime.now(timezone.utc) > self.created_at + timedelta(seconds=self.ttl_seconds)
 
 
 class AuditRecord(BaseModel):

@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import json
 import logging
+import re
 from datetime import datetime, timezone
+from pathlib import Path
 from typing import Any
 from uuid import uuid4
 
@@ -12,6 +14,36 @@ from ollama._types import ResponseError
 from specweave.config import settings
 
 logger = logging.getLogger(__name__)
+
+
+def parse_json_response(text: str) -> Any:
+    text = text.strip()
+    if not text:
+        return None
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    m = re.search(r"```(?:json)?\s*\n?(.*?)\n?```", text, re.DOTALL)
+    if m:
+        try:
+            return json.loads(m.group(1).strip())
+        except json.JSONDecodeError:
+            pass
+    m = re.search(r"(\[.*\]|\{.*\})", text, re.DOTALL)
+    if m:
+        try:
+            return json.loads(m.group(0))
+        except json.JSONDecodeError:
+            pass
+    return None
+
+
+def _load_grammar(name: str) -> str | None:
+    path = Path(__file__).parent.parent / "grammar" / name
+    if path.exists():
+        return path.read_text()
+    return None
 
 
 class SpeculativeEngine:
@@ -35,9 +67,12 @@ class SpeculativeEngine:
     def __init__(self) -> None:
         self.client = Client(host=settings.ollama_host)
 
-    def _generate(self, model: str, prompt: str) -> str:
+    def _generate(self, model: str, prompt: str, grammar: str | None = None) -> str:
+        kwargs = {"model": model, "prompt": prompt}
+        if grammar is not None:
+            kwargs["grammar"] = grammar
         try:
-            response = self.client.generate(model=model, prompt=prompt)
+            response = self.client.generate(**kwargs)
             return response.response.strip()
         except ResponseError as e:
             logger.warning("Ollama model '%s' not available: %s", model, e)
@@ -48,11 +83,11 @@ class SpeculativeEngine:
 
     def speculate(self, spec_id: str, section_id: str, section_content: str, constraints: list[str]) -> list[dict[str, Any]]:
         prompt = self.SPECULATOR_PROMPT.format(section_content=section_content)
-        candidates_text = self._generate(settings.speculator_model, prompt)
+        spec_grammar = _load_grammar("speculator.gbnf")
+        candidates_text = self._generate(settings.speculator_model, prompt, grammar=spec_grammar)
 
-        try:
-            candidates = json.loads(candidates_text)
-        except json.JSONDecodeError:
+        candidates = parse_json_response(candidates_text)
+        if not isinstance(candidates, list):
             candidates = [{"architecture_description": candidates_text, "rationale": "", "tradeoffs": []}]
 
         if not candidates:
@@ -67,17 +102,15 @@ class SpeculativeEngine:
                 architecture=candidate.get("architecture_description", ""),
                 constraints="\n".join(f"- {c}" for c in constraints),
             )
-            ver_raw = self._generate(settings.verifier_model, ver_prompt)
+            ver_grammar = _load_grammar("verifier.gbnf")
+            ver_raw = self._generate(settings.verifier_model, ver_prompt, grammar=ver_grammar)
 
             scores = {}
             verdict = "accept"
-            try:
-                ver_result = json.loads(ver_raw)
-                if isinstance(ver_result, dict):
-                    scores = ver_result.get("scores", {})
-                    verdict = ver_result.get("verdict", "accept")
-            except (json.JSONDecodeError, TypeError):
-                pass
+            ver_result = parse_json_response(ver_raw)
+            if isinstance(ver_result, dict):
+                scores = ver_result.get("scores", {})
+                verdict = ver_result.get("verdict", "accept")
 
             results.append({
                 "id": cand_id,

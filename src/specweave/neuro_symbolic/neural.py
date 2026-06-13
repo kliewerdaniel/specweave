@@ -1,6 +1,8 @@
 from __future__ import annotations
 
+import json
 import logging
+import re
 from typing import Any
 
 from ollama import Client
@@ -9,6 +11,29 @@ from ollama._types import ResponseError
 from specweave.config import settings
 
 logger = logging.getLogger(__name__)
+
+
+def parse_json_response(raw: str) -> dict[str, Any] | None:
+    text = raw.strip()
+    if not text:
+        return None
+    try:
+        return json.loads(text)
+    except json.JSONDecodeError:
+        pass
+    m = re.search(r"```(?:json)?\s*\n?(.*?)\n?```", text, re.DOTALL)
+    if m:
+        try:
+            return json.loads(m.group(1).strip())
+        except json.JSONDecodeError:
+            pass
+    m = re.search(r"\{.*\}", text, re.DOTALL)
+    if m:
+        try:
+            return json.loads(m.group(0))
+        except json.JSONDecodeError:
+            pass
+    return None
 
 
 class NeuralChecker:
@@ -35,7 +60,10 @@ class NeuralChecker:
             "contradictions list, and score 0.0-1.0"
         )
         raw = self._call_model(settings.general_model, prompt)
-        return {"check": "semantic_contradiction_detection", "result": raw}
+        parsed = parse_json_response(raw)
+        if parsed is not None:
+            return {"check": "semantic_contradiction_detection", "result": parsed}
+        return {"check": "semantic_contradiction_detection", "result": {"has_contradiction": False, "contradictions": [], "score": 0.0}}
 
     def intent_alignment_scoring(self, intent: str, architecture: str) -> dict[str, Any]:
         prompt = (
@@ -45,7 +73,10 @@ class NeuralChecker:
             "Respond with a JSON object with alignment_score and reasoning"
         )
         raw = self._call_model(settings.general_model, prompt)
-        return {"check": "intent_alignment_scoring", "result": raw}
+        parsed = parse_json_response(raw)
+        if parsed is not None:
+            return {"check": "intent_alignment_scoring", "result": parsed}
+        return {"check": "intent_alignment_scoring", "result": {"alignment_score": 0.0, "reasoning": "Parse failed"}}
 
     def architectural_coherence_check(self, architecture: str) -> dict[str, Any]:
         prompt = (
@@ -54,4 +85,7 @@ class NeuralChecker:
             "Respond with a JSON object with coherence_score, issues list, and recommendations list"
         )
         raw = self._call_model(settings.general_model, prompt)
-        return {"check": "architectural_coherence_check", "result": raw}
+        parsed = parse_json_response(raw)
+        if parsed is not None:
+            return {"check": "architectural_coherence_check", "result": parsed}
+        return {"check": "architectural_coherence_check", "result": {"coherence_score": 0.0, "issues": [], "recommendations": []}}

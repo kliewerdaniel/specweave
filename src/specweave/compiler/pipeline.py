@@ -12,10 +12,11 @@ class CompilerPipeline:
     GATES = [
         "gate1_completeness",
         "gate2_consistency",
-        "gate3_dependencies",
-        "gate4_constraints",
-        "gate5_coherence",
-        "gate6_readiness",
+        "gate3_graph_consistency",
+        "gate4_dependencies",
+        "gate5_constraints",
+        "gate6_coherence",
+        "gate7_readiness",
     ]
 
     def __init__(self, db: SQLiteStore, graph: GraphStore) -> None:
@@ -60,10 +61,11 @@ class CompilerPipeline:
         handlers = {
             "gate1_completeness": self._gate_completeness,
             "gate2_consistency": self._gate_consistency,
-            "gate3_dependencies": self._gate_dependencies,
-            "gate4_constraints": self._gate_constraints,
-            "gate5_coherence": self._gate_coherence,
-            "gate6_readiness": self._gate_readiness,
+            "gate3_graph_consistency": self._gate_graph_consistency,
+            "gate4_dependencies": self._gate_dependencies,
+            "gate5_constraints": self._gate_constraints,
+            "gate6_coherence": self._gate_coherence,
+            "gate7_readiness": self._gate_readiness,
         }
         handler = handlers.get(gate_id)
         if handler is None:
@@ -82,12 +84,29 @@ class CompilerPipeline:
         return {"status": "passed"}
 
     def _gate_consistency(self, spec: dict[str, Any]) -> dict[str, Any]:
+        required_spec_fields = ["id", "project_name", "project_title", "project_description", "version", "raw_spec"]
+        missing = [f for f in required_spec_fields if not spec.get(f)]
+        if missing:
+            return {
+                "status": "failed",
+                "failure_reason": f"Spec missing internal fields: {missing}",
+                "failure_location": {"missing_fields": missing},
+            }
+        if spec.get("version", "").count(".") != 2:
+            return {
+                "status": "failed",
+                "failure_reason": "Version must be in semver format (X.Y.Z)",
+                "failure_location": {"version": spec.get("version")},
+            }
+        return {"status": "passed"}
+
+    def _gate_graph_consistency(self, spec: dict[str, Any]) -> dict[str, Any]:
         results = self.symbolic.check_all()
         failures = [r for r in results if not r["passed"]]
         if failures:
             return {
                 "status": "failed",
-                "failure_reason": f"Consistency checks failed: {[f['name'] for f in failures]}",
+                "failure_reason": f"Graph consistency checks failed: {[f['name'] for f in failures]}",
                 "failure_location": {"failures": failures},
             }
         return {"status": "passed"}
@@ -122,18 +141,34 @@ class CompilerPipeline:
     def _gate_coherence(self, spec: dict[str, Any]) -> dict[str, Any]:
         intent = spec.get("project_description", "")
         layers = str(spec.get("graph_snapshot", {}))
-        result = self.neural.architectural_coherence_check(
+        neural_result = self.neural.architectural_coherence_check(
             f"Intent: {intent}\n\nArchitecture layers: {layers}"
         )
-        return {"status": "passed", "details": result}
+        result_data = neural_result.get("result", {})
+        coherence_score = result_data.get("coherence_score", 0.0) if isinstance(result_data, dict) else 0.0
+        if coherence_score < 0.5:
+            issues = result_data.get("issues", ["Low coherence score"]) if isinstance(result_data, dict) else ["Low coherence score"]
+            return {
+                "status": "failed",
+                "failure_reason": f"Architectural coherence score {coherence_score} below threshold 0.5",
+                "failure_location": {"coherence_score": coherence_score, "issues": issues},
+            }
+        return {"status": "passed", "details": neural_result}
 
     def _gate_readiness(self, spec: dict[str, Any]) -> dict[str, Any]:
         modules = self.graph.get_nodes_by_type("module")
         endpoints = self.graph.get_nodes_by_type("api_endpoint")
+        gate_nodes = self.graph.get_nodes_by_type("verification_gate")
         if not modules and not endpoints:
             return {
                 "status": "failed",
-                "failure_reason": "No modules or endpoints defined in graph",
-                "failure_location": {"modules": 0, "endpoints": 0},
+                "failure_reason": "No modules or endpoints defined in graph; spec cannot resolve to executable code",
+                "failure_location": {"modules": 0, "endpoints": 0, "verification_gates": len(gate_nodes)},
             }
-        return {"status": "passed", "details": {"modules": len(modules), "endpoints": len(endpoints)}}
+        if not gate_nodes:
+            return {
+                "status": "failed",
+                "failure_reason": "No verification gates recorded; spec has not passed compiler checks",
+                "failure_location": {"modules": len(modules), "endpoints": len(endpoints), "verification_gates": 0},
+            }
+        return {"status": "passed", "details": {"modules": len(modules), "endpoints": len(endpoints), "verification_gates": len(gate_nodes)}}

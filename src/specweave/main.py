@@ -7,13 +7,15 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from specweave.api import gateway_router, health_router, specs_router
 from specweave.config import settings
-from specweave.persistence import GraphStore, SQLiteStore
+from specweave.persistence import GraphStore, SQLiteStore, VectorStore
 
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     db = SQLiteStore(settings.sqlite_path)
     db.initialize()
+
+    vector_store = VectorStore(settings.chroma_path)
 
     graph_store = GraphStore()
     graph_store.add_node("specweave", "spec_section", title="SpecWeave", status="active")
@@ -35,6 +37,8 @@ async def lifespan(app: FastAPI):
     graph_store.add_edge("gateway", "persistence", "depends_on")
     graph_store.add_edge("gateway", "neuro_symbolic", "depends_on")
 
+    app.state.db = db
+    app.state.vector_store = vector_store
     app.state.graph_store = graph_store
     yield
 
@@ -47,9 +51,10 @@ app = FastAPI(
     lifespan=lifespan,
 )
 
+cors_allowed = [s.strip() for s in settings.cors_origins.split(",") if s.strip()]
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=cors_allowed if cors_allowed else ["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],

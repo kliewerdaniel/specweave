@@ -2,12 +2,17 @@ from __future__ import annotations
 
 from typing import Any
 
-from specweave.persistence import SQLiteStore
+from specweave.gateway.a2a import A2AHandler
+from specweave.persistence import SQLiteStore, VectorStore
+
+from specweave.config import settings
 
 
 class MCPHandler:
     def __init__(self, db: SQLiteStore) -> None:
         self.db = db
+        self._a2a = A2AHandler(db)
+        self._vector_store = VectorStore(settings.chroma_path)
         self._tools: dict[str, dict[str, Any]] = {
             "list_specs": {
                 "name": "list_specs",
@@ -69,12 +74,9 @@ class MCPHandler:
         handlers = {
             "list_specs": lambda p: self.db.list_specs(),
             "get_spec": lambda p: self.db.get_spec(p.get("spec_id", "")),
-            "search_specs": lambda p: {"message": "Use vector store search endpoint"},
+            "search_specs": lambda p: self._vector_store.search(p.get("query", "")),
             "get_gates": lambda p: self.db.get_gates_for_spec(p.get("spec_id", "")),
-            "impact_analysis": lambda p: {
-                "target": p.get("spec_id", ""),
-                "message": "Use A2A impact analysis endpoint",
-            },
+            "impact_analysis": lambda p: self._a2a.impact_analysis(p.get("spec_id", "")),
         }
         handler = handlers.get(tool)
         if handler is None:

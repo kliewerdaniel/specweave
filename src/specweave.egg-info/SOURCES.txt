@@ -1,3 +1,4 @@
+README.md
 pyproject.toml
 src/specweave/__init__.py
 src/specweave/auth.py
@@ -17,6 +18,8 @@ src/specweave/compiler/pipeline.py
 src/specweave/gateway/__init__.py
 src/specweave/gateway/a2a.py
 src/specweave/gateway/mcp.py
+src/specweave/migrations/__init__.py
+src/specweave/migrations/runner.py
 src/specweave/models/__init__.py
 src/specweave/models/spec.py
 src/specweave/neuro_symbolic/__init__.py
@@ -26,8 +29,17 @@ src/specweave/persistence/__init__.py
 src/specweave/persistence/graph_store.py
 src/specweave/persistence/sqlite_store.py
 src/specweave/persistence/vector_store.py
+src/specweave/spec_format/__init__.py
+src/specweave/spec_format/diff.py
+src/specweave/spec_format/sspec_parser.py
+src/specweave/spec_format/validators.py
 src/specweave/speculative/__init__.py
 src/specweave/speculative/engine.py
 tests/test_api.py
+tests/test_api_specs.py
+tests/test_auth.py
+tests/test_compiler.py
 tests/test_models.py
+tests/test_neuro_symbolic.py
 tests/test_persistence.py
+tests/test_speculative.py

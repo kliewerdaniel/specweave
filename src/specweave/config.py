@@ -26,6 +26,8 @@ class Settings(BaseSettings):
     general_model: str = "llama3.2-8b"
     embedding_model: str = "nomic-embed-text"
 
+    cors_origins: str = "http://localhost:3000,http://localhost:8000"
+
     data_dir: Path = Path(".sovereignspec")
     sqlite_path: Path = Path(".sovereignspec/memory/specweave.db")
     chroma_path: str = ".sovereignspec/memory/chromadb"
