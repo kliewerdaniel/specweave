@@ -1,0 +1,551 @@
+# SpecWeave: Self-Verifying, Speculative, Multi-Agent Spec Engine
+# SovereignSpec v2 — A2A/MCP Interoperability + Neuro-Symbolic Reasoning
+
+---
+
+## Metadata
+
+project_name: specweave
+project_title: "SpecWeave"
+project_description: >
+  A self-verifying, speculative, multi-agent spec engine with neuro-symbolic
+  reasoning and A2A/MCP interoperability. The spec doesn't just describe the
+  system — it verifies itself, speculates about better architectures, delegates
+  to other agents, and evolves. All locally. All offline.
+version: "2.0.0"
+author: "Daniel Kliewer"
+created: "2026-06-13"
+status: "draft"
+license: "MIT"
+tags:
+  - local-first
+  - self-verifying
+  - speculative-reasoning
+  - neuro-symbolic
+  - a2a-protocol
+  - mcp-protocol
+  - spec-driven-development
+
+---
+
+## Intent
+
+primary_intent: >
+  Build a spec-driven development engine where specifications are living,
+  self-verifying artifacts that draft alternative architectures, validate
+  internal consistency through neuro-symbolic reasoning, and expose
+  A2A/MCP gateways for multi-agent collaboration — all running locally
+  with zero cloud API calls.
+
+core_principles:
+  - "Local-first: zero cloud dependency, all inference via Ollama/llama.cpp"
+  - "Self-verifying: specs validate their own consistency before compilation"
+  - "Speculative: draft-and-verify at the architecture level before committing"
+  - "Neuro-symbolic: neural generation + symbolic validation in a hybrid loop"
+  - "Interoperable: A2A/MCP gateway for agent federation"
+  - "Governed: every decision produces an audit record with provenance"
+
+---
+
+## Architecture
+
+architecture_name: "7-Layer SpecWeave"
+architecture_type: "layered-microservices"
+constraints:
+  execution_mode: "local-only"
+  no_cloud_apis: true
+  no_telemetry: true
+  inference_backends:
+    - "ollama"
+    - "llama.cpp"
+  gbnf_grammar_enforcement: true
+
+layers:
+  - id: "layer1_inference"
+    name: "Local Inference"
+    description: "All model execution via Ollama on localhost. Zero cloud dependency."
+    dependencies: []
+    technologies:
+      - "ollama"
+      - "llama.cpp"
+    models:
+      - name: "qwen2.5-3b"
+        role: "speculator"
+        description: "Lightweight speculator for drafting alternative architectures"
+      - name: "nemotron-cascade-2-30b"
+        role: "verifier"
+        description: "Target model for verifying spec alternatives against constraints"
+      - name: "llama3.2-8b"
+        role: "general"
+        description: "General-purpose reasoning for spec compilation and validation"
+      - name: "nomic-embed-text"
+        role: "embedding"
+        description: "Embedding model for vector store operations"
+
+  - id: "layer2_persistence"
+    name: "Persistence"
+    description: "Local-first data storage with SQLite, ChromaDB, and NetworkX."
+    dependencies:
+      - "layer1_inference"
+    technologies:
+      - "sqlite"
+      - "chromadb"
+      - "networkx"
+    data_stores:
+      - name: "metadata_db"
+        type: "sqlite"
+        purpose: "Structured metadata, spec versions, audit records, gate statuses"
+      - name: "vector_store"
+        type: "chromadb"
+        purpose: "Semantic search over specs, ADRs, patterns, rejected proposals"
+      - name: "graph_store"
+        type: "networkx"
+        purpose: "Spec graph with 11 node types, 9 edge types, constraint queries"
+
+  - id: "layer3_speculative"
+    name: "Speculative Reasoning Engine"
+    description: >
+      Drafts alternative architectures using lightweight speculator model,
+      verifies against constraints using target model, commits best candidate
+      with alternatives stored as rejected proposals with reasoning traces.
+    dependencies:
+      - "layer1_inference"
+    pipeline:
+      - phase: "draft"
+        description: "Speculator generates 2-3 candidate architectures per spec section"
+        model: "qwen2.5-3b"
+      - phase: "verify"
+        description: "Target model evaluates each candidate against constraints"
+        model: "nemotron-cascade-2-30b"
+      - phase: "commit"
+        description: "Best candidate merged; alternatives stored with reasoning traces"
+        model: "llama3.2-8b"
+
+  - id: "layer4_neuro_symbolic"
+    name: "Neuro-Symbolic Knowledge Graph"
+    description: >
+      Symbolic validator runs deterministic constraint checks over neural-generated
+      spec content. Neural generates; symbolic validates. If symbolic fails, neural
+      is prompted to revise.
+    dependencies:
+      - "layer2_persistence"
+    symbolic_layer:
+      graph_engine: "networkx"
+      node_types:
+        - "spec_section"
+        - "module"
+        - "api_endpoint"
+        - "data_model"
+        - "constraint"
+        - "dependency"
+        - "agent"
+        - "verification_gate"
+        - "rejected_proposal"
+        - "audit_record"
+        - "persona"
+      edge_types:
+        - "depends_on"
+        - "validates"
+        - "generates"
+        - "delegates_to"
+        - "contradicts"
+        - "satisfies"
+        - "evolves_from"
+        - "verifies"
+        - "rejects"
+      constraint_queries:
+        - name: "no_circular_dependencies"
+          query: "topological_sort(spec_graph) raises no cycle error"
+        - name: "every_endpoint_has_auth"
+          query: "all(api_endpoint nodes have auth_gate edge)"
+        - name: "no_unresolved_dependencies"
+          query: "all(module nodes have resolved dependency edges)"
+        - name: "constraint_satisfaction"
+          query: "all(constraint nodes have satisfies edge from spec_section)"
+    neural_layer:
+      vector_engine: "chromadb"
+      embedding_model: "nomic-embed-text"
+      consistency_checks:
+        - "semantic_contradiction_detection"
+        - "intent_alignment_scoring"
+        - "architectural_coherence_check"
+
+  - id: "layer5_compiler"
+    name: "Self-Verifying Spec Compiler"
+    description: >
+      12-step compiler pipeline with 6 self-verification gates. Each gate produces
+      a verification report with exact failure locations. Failed gates trigger
+      targeted regeneration of failing spec sections.
+    dependencies:
+      - "layer2_persistence"
+      - "layer4_neuro_symbolic"
+    verification_gates:
+      - gate_id: "gate1_completeness"
+        name: "Spec Completeness"
+        description: "All required fields present in spec"
+        checks:
+          - "metadata_fields_complete"
+          - "intent_declared"
+          - "architecture_defined"
+          - "constraints_specified"
+          - "data_models_defined"
+      - gate_id: "gate2_consistency"
+        name: "Internal Consistency"
+        description: "No contradictions in the spec graph"
+        checks:
+          - "no_semantic_contradictions"
+          - "no_conflicting_constraints"
+          - "intent_matches_architecture"
+      - gate_id: "gate3_dependencies"
+        name: "Dependency Resolution"
+        description: "Topological sort of spec nodes — no cycles"
+        checks:
+          - "no_circular_dependencies"
+          - "all_dependencies_resolved"
+          - "layer_ordering_valid"
+      - gate_id: "gate4_constraints"
+        name: "Constraint Satisfaction"
+        description: "Budget, latency, privacy thresholds met"
+        checks:
+          - "local_first_enforced"
+          - "no_cloud_dependency"
+          - "governance_compliant"
+          - "latency_threshold_met"
+      - gate_id: "gate5_coherence"
+        name: "Architecture Coherence"
+        description: "Chosen architecture matches spec's declared intent"
+        checks:
+          - "intent_architecture_alignment"
+          - "layer_dependencies_valid"
+          - "technology_stack_consistent"
+      - gate_id: "gate6_readiness"
+        name: "Code Generation Readiness"
+        description: "All spec nodes resolvable to code patterns"
+        checks:
+          - "all_modules_have_patterns"
+          - "all_endpoints_defined"
+          - "all_data_models_complete"
+
+  - id: "layer6_gateway"
+    name: "A2A/MCP Agent Gateway"
+    description: >
+      Local A2A/MCP server allowing other local agents to discover specs,
+      request sub-specs for delegation, submit completed sub-specs, and
+      query the spec graph for impact analysis.
+    dependencies:
+      - "layer2_persistence"
+      - "layer4_neuro_symbolic"
+    protocols:
+      - name: "a2a"
+        version: "1.0"
+        description: "Agent-to-Agent protocol for inter-agent communication"
+      - name: "mcp"
+        description: "Model Context Protocol for agent-tool integration"
+    capabilities:
+      - "spec_discovery"
+      - "sub_spec_delegation"
+      - "sub_spec_submission"
+      - "graph_query"
+      - "impact_analysis"
+      - "verification_status"
+
+  - id: "layer7_interface"
+    name: "Interface"
+    description: "Next.js dashboard with interactive spec visualization and monitoring."
+    dependencies:
+      - "layer5_compiler"
+      - "layer6_gateway"
+    technologies:
+      - "next.js"
+      - "react"
+      - "shadcn/ui"
+    views:
+      - name: "spec_graph"
+        description: "Interactive NetworkX graph with verification status indicators"
+      - name: "speculative_explorer"
+        description: "Side-by-side comparison of drafted architectural alternatives"
+      - name: "verification_dashboard"
+        description: "Gate-by-gate status with failure traces"
+      - name: "agent_monitor"
+        description: "Active A2A/MCP connections and delegation states"
+
+---
+
+## API
+
+api_type: "fastapi"
+base_url: "/api/v2"
+auth_required: true
+auth_method: "jwt"
+
+endpoints:
+  - path: "/specs"
+    method: "GET"
+    description: "List all specs with status"
+    response_schema: "SpecListResponse"
+
+  - path: "/specs"
+    method: "POST"
+    description: "Create new spec from .sspec file"
+    request_schema: "SpecCreateRequest"
+    response_schema: "SpecResponse"
+
+  - path: "/specs/{spec_id}"
+    method: "GET"
+    description: "Get spec with full graph and verification status"
+    response_schema: "SpecDetailResponse"
+
+  - path: "/specs/{spec_id}/compile"
+    method: "POST"
+    description: "Trigger self-verifying compilation pipeline"
+    response_schema: "CompilationResponse"
+
+  - path: "/specs/{spec_id}/speculate"
+    method: "POST"
+    description: "Draft alternative architectures for a spec section"
+    request_schema: "SpeculateRequest"
+    response_schema: "SpeculationResponse"
+
+  - path: "/specs/{spec_id}/verify"
+    method: "POST"
+    description: "Run neuro-symbolic verification on a spec"
+    response_schema: "VerificationResponse"
+
+  - path: "/specs/{spec_id}/gates"
+    method: "GET"
+    description: "Get gate-by-gate verification status"
+    response_schema: "GateStatusResponse"
+
+  - path: "/specs/{spec_id}/delegates"
+    method: "GET"
+    description: "List delegated sub-specs and their statuses"
+    response_schema: "DelegationListResponse"
+
+  - path: "/specs/{spec_id}/delegates"
+    method: "POST"
+    description: "Delegate a sub-spec to another agent"
+    request_schema: "DelegationRequest"
+    response_schema: "DelegationResponse"
+
+  - path: "/specs/{spec_id}/graph"
+    method: "GET"
+    description: "Get spec graph as adjacency list"
+    response_schema: "GraphResponse"
+
+  - path: "/specs/{spec_id}/audit"
+    method: "GET"
+    description: "Get full audit trail for a spec"
+    response_schema: "AuditTrailResponse"
+
+  - path: "/a2a/specs"
+    method: "GET"
+    description: "A2A protocol: discover available specs"
+    response_schema: "A2ASpecListResponse"
+
+  - path: "/a2a/delegate"
+    method: "POST"
+    description: "A2A protocol: request sub-spec delegation"
+    request_schema: "A2ADelegationRequest"
+    response_schema: "A2ADelegationResponse"
+
+  - path: "/a2a/submit"
+    method: "POST"
+    description: "A2A protocol: submit completed sub-spec"
+    request_schema: "A2ASubmissionRequest"
+    response_schema: "A2ASubmissionResponse"
+
+  - path: "/mcp/tools"
+    method: "GET"
+    description: "MCP protocol: list available tools"
+    response_schema: "MCPToolListResponse"
+
+  - path: "/mcp/execute"
+    method: "POST"
+    description: "MCP protocol: execute a tool"
+    request_schema: "MCPExecuteRequest"
+    response_schema: "MCPExecuteResponse"
+
+  - path: "/health"
+    method: "GET"
+    description: "Health check"
+    response_schema: "HealthResponse"
+
+---
+
+## Data Models
+
+models:
+  - name: "Spec"
+    fields:
+      - name: "id"
+        type: "str"
+        primary_key: true
+      - name: "project_name"
+        type: "str"
+        required: true
+      - name: "project_title"
+        type: "str"
+        required: true
+      - name: "project_description"
+        type: "text"
+        required: true
+      - name: "version"
+        type: "str"
+        default: "0.1.0"
+      - name: "status"
+        type: "enum"
+        values:
+          - "draft"
+          - "speculating"
+          - "verifying"
+          - "compiling"
+          - "compiled"
+          - "failed"
+        required: true
+      - name: "created_at"
+        type: "datetime"
+        required: true
+      - name: "updated_at"
+        type: "datetime"
+        required: true
+      - name: "raw_spec"
+        type: "text"
+        required: true
+      - name: "graph_snapshot"
+        type: "json"
+      - name: "verification_report"
+        type: "json"
+
+  - name: "VerificationGate"
+    fields:
+      - name: "id"
+        type: "str"
+        primary_key: true
+      - name: "spec_id"
+        type: "str"
+        foreign_key: "Spec.id"
+        required: true
+      - name: "gate_id"
+        type: "str"
+        required: true
+      - name: "status"
+        type: "enum"
+        values:
+          - "pending"
+          - "passed"
+          - "failed"
+        required: true
+      - name: "failure_reason"
+        type: "text"
+      - name: "failure_location"
+        type: "json"
+      - name: "checked_at"
+        type: "datetime"
+
+  - name: "Speculation"
+    fields:
+      - name: "id"
+        type: "str"
+        primary_key: true
+      - name: "spec_id"
+        type: "str"
+        foreign_key: "Spec.id"
+        required: true
+      - name: "section_id"
+        type: "str"
+        required: true
+      - name: "candidate_index"
+        type: "int"
+        required: true
+      - name: "architecture_description"
+        type: "text"
+        required: true
+      - name: "constraint_scores"
+        type: "json"
+      - name: "status"
+        type: "enum"
+        values:
+          - "drafted"
+          - "verified"
+          - "committed"
+          - "rejected"
+        required: true
+      - name: "rejection_reason"
+        type: "text"
+      - name: "created_at"
+        type: "datetime"
+        required: true
+
+- name: "Delegation"
+    fields:
+      - name: "id"
+        type: "str"
+        primary_key: true
+      - name: "spec_id"
+        type: "str"
+        foreign_key: "Spec.id"
+        required: true
+      - name: "sub_spec_content"
+        type: "text"
+        required: true
+      - name: "target_agent"
+        type: "str"
+        required: true
+      - name: "status"
+        type: "enum"
+        values: ["pending", "accepted", "completed", "failed"]
+        required: true
+      - name: "result"
+        type: "text"
+      - name: "created_at"
+        type: "datetime"
+        required: true
+
+  - name: "AuditRecord"
+    fields:
+      - name: "id"
+        type: "str"
+        primary_key: true
+      - name: "spec_id"
+        type: "str"
+        foreign_key: "Spec.id"
+        required: true
+      - name: "action"
+        type: "str"
+        required: true
+      - name: "actor"
+        type: "str"
+        required: true
+      - name: "details"
+        type: "json"
+      - name: "created_at"
+        type: "datetime"
+        required: true
+
+---
+
+## Dependencies
+
+dependencies:
+  - name: "fastapi"
+    version: "0.115+"
+    purpose: "API backend framework"
+  - name: "sqlalchemy"
+    version: "2.0+"
+    purpose: "ORM for SQLite"
+  - name: "chromadb"
+    version: "0.5+"
+    purpose: "Vector store for semantic search"
+  - name: "networkx"
+    version: "3.3+"
+    purpose: "Knowledge graph engine"
+  - name: "pydantic"
+    version: "2.9+"
+    purpose: "Data validation and .sspec parsing"
+  - name: "ollama-python"
+    version: "0.4+"
+    purpose: "Python client for Ollama"
+  - name: "python-jose"
+    version: "3.3+"
+    purpose: "JWT authentication"
+  - name: "passlib"

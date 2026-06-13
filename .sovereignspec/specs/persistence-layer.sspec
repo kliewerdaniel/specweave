@@ -1,0 +1,49 @@
+id: persistence-layer
+title: Persistence Layer
+version: 2.0.0
+status: draft
+purpose: "Local-first data storage layer using SQLite for structured metadata, ChromaDB for vector embeddings and semantic search, and NetworkX for the spec knowledge graph."
+requirements:
+  - "System must initialize SQLite database with tables for spec metadata, audit records, and gate statuses"
+  - "System must initialize ChromaDB vector store for semantic search over specs, ADRs, and patterns"
+  - "System must initialize NetworkX graph store for spec graph with 11 node types and 9 edge types"
+  - "System must provide CRUD operations for all data stores"
+  - "System must generate embeddings via nomic-embed-text through Ollama"
+  - "System must create all database schemas on startup"
+constraints:
+  - "SQLite via sqlite3 only"
+  - "ChromaDB 0.5+"
+  - "NetworkX 3.3+"
+  - "All stores on local filesystem only"
+  - "Zero cloud APIs for any storage operation"
+  - "Embedding model nomic-embed-text"
+acceptance_criteria:
+  - "SQLite database initializes with all tables on first run"
+  - "ChromaDB collection initializes with correct embedding dimension"
+  - "NetworkX graph initializes with spec nodes and edges"
+  - "Spec metadata can be created, read, updated, deleted"
+  - "Semantic search returns relevant spec content"
+  - "Graph queries return correct adjacency"
+  - "All stores survive restart"
+dependencies: []
+test_cases:
+  - id: DB-001
+    description: "SQLite schema creation"
+    given: "Fresh database"
+    when: "Initialize persistence layer"
+    then: "All tables exist including specs, verification_gates, speculations, delegations, audit_records"
+  - id: DB-002
+    description: "Vector store embedding and search"
+    given: "ChromaDB collection with embedded spec content"
+    when: "Search with query string"
+    then: "Returns semantically relevant results"
+  - id: DB-003
+    description: "Graph store node creation"
+    given: "NetworkX directed graph"
+    when: "Add spec node with edges"
+    then: "Graph contains node with correct relationships"
+tags:
+  - persistence
+  - sqlite
+  - chromadb
+  - networkx

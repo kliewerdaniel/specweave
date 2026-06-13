@@ -1,0 +1,63 @@
+id: self-verifying-compiler
+title: Self-Verifying Spec Compiler
+version: 2.0.0
+status: draft
+purpose: "12-step compiler pipeline with 6 self-verification gates. Each gate produces a verification report with exact failure locations. Failed gates trigger targeted regeneration using the neuro-symbolic hybrid loop."
+requirements:
+  - "System must implement a 12-step compiler pipeline with 6 verification gates"
+  - "System must verify all required fields are present in Gate 1 - Completeness"
+  - "System must verify no contradictions exist in the spec graph in Gate 2 - Consistency"
+  - "System must verify topological sort has no cycles and all deps resolved in Gate 3 - Dependencies"
+  - "System must verify local-first, no-cloud, and governance thresholds in Gate 4 - Constraints"
+  - "System must verify architecture matches declared intent in Gate 5 - Coherence"
+  - "System must verify all nodes resolvable to code patterns in Gate 6 - Readiness"
+  - "System must produce a verification report with exact failure locations for each gate"
+  - "System must trigger targeted regeneration of failing sections when gates fail"
+  - "System must store VerificationGate records in SQLite for audit trail"
+constraints:
+  - "Gates execute in order 1 through 6, stop on first failure"
+  - "Each gate must complete within configurable timeout"
+  - "All gate results persisted to SQLite"
+  - "Failed gates must report exact failure location"
+  - "Targeted regeneration uses neuro-symbolic hybrid loop"
+  - "No cloud APIs"
+acceptance_criteria:
+  - "All 6 gates execute in sequence"
+  - "Complete spec passes all 6 gates"
+  - "Incomplete spec fails gate 1 with exact missing fields"
+  - "Inconsistent spec fails gate 2 with contradiction locations"
+  - "Cyclic dependencies fail gate 3 with cycle path"
+  - "Constraint-violating spec fails gate 4 with violated constraints"
+  - "Mismatched architecture fails gate 5 with alignment details"
+  - "Incomplete patterns fail gate 6 with missing modules"
+  - "Failed gates trigger regeneration of failing sections"
+  - "VerificationGate records created for each gate execution"
+dependencies:
+  - persistence-layer
+  - neuro-symbolic-kg
+  - speculative-reasoning
+test_cases:
+  - id: COMPILE-001
+    description: "Full compilation of valid spec"
+    given: "Valid spec with all fields and no contradictions"
+    when: "POST /api/v2/specs/{id}/compile"
+    then: "All 6 gates pass and spec status becomes compiled"
+  - id: COMPILE-002
+    description: "Gate 1 fails on incomplete spec"
+    given: "Spec missing required fields"
+    when: "Run compilation"
+    then: "Gate 1 fails with list of missing fields"
+  - id: COMPILE-003
+    description: "Gate 3 fails on circular dependencies"
+    given: "Spec with circular dependency chain"
+    when: "Run compilation"
+    then: "Gate 3 fails with cycle path"
+  - id: COMPILE-004
+    description: "Verification report structure"
+    given: "Compilation result"
+    when: "Get verification report"
+    then: "Report contains gate_id, status, failure_reason, failure_location, checked_at"
+tags:
+  - compiler
+  - verification
+  - pipeline

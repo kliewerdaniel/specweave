@@ -1,0 +1,53 @@
+id: interface-layer
+title: Interface Layer
+version: 2.0.0
+status: draft
+purpose: "Next.js dashboard with interactive spec visualization, speculative architecture comparison, verification gate monitoring, and agent federation status."
+requirements:
+  - "System must provide a Next.js application with React and shadcn/ui components"
+  - "System must provide a spec graph view with interactive NetworkX graph and verification status indicators"
+  - "System must provide a speculative explorer with side-by-side comparison of architectural alternatives"
+  - "System must provide a verification dashboard with gate-by-gate status and failure traces"
+  - "System must provide an agent monitor with active A2A/MCP connections and delegation states"
+  - "System must consume the FastAPI backend API for all views"
+constraints:
+  - "Next.js with App Router"
+  - "shadcn/ui for component library"
+  - "Tailwind CSS for styling"
+  - "All API calls to local FastAPI backend"
+  - "No cloud dependencies"
+acceptance_criteria:
+  - "Spec graph view renders interactive graph with nodes and edges"
+  - "Nodes colored by verification status: pass, fail, pending"
+  - "Speculative explorer shows side-by-side candidate comparison"
+  - "Verification dashboard shows all 6 gates with pass/fail indicators"
+  - "Agent monitor shows active connections and delegation statuses"
+  - "Interface loads without any cloud API calls"
+  - "Responsive layout on desktop browsers"
+dependencies:
+  - core-engine
+test_cases:
+  - id: UI-001
+    description: "Spec graph rendering"
+    given: "Backend with spec graph data"
+    when: "Load spec graph view"
+    then: "Interactive graph renders with correct nodes and edges"
+  - id: UI-002
+    description: "Verification dashboard"
+    given: "Backend with gate statuses"
+    when: "Load verification dashboard"
+    then: "All 6 gates shown with correct status indicators"
+  - id: UI-003
+    description: "Speculative explorer"
+    given: "Backend with speculation results"
+    when: "Load speculative explorer"
+    then: "Candidates shown side-by-side with constraint scores"
+  - id: UI-004
+    description: "Agent monitor"
+    given: "Backend with active delegations"
+    when: "Load agent monitor"
+    then: "Shows connection states and delegation statuses"
+tags:
+  - ui
+  - nextjs
+  - dashboard

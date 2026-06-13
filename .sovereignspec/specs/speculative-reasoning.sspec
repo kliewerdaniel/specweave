@@ -1,0 +1,50 @@
+id: speculative-reasoning
+title: Speculative Reasoning Engine
+version: 2.0.0
+status: draft
+purpose: "Drafts alternative architectures using a lightweight speculator model, verifies each candidate against constraints, and commits the best candidate. Rejected alternatives stored with full reasoning traces."
+requirements:
+  - "System must implement a three-phase pipeline with draft, verify, and commit phases"
+  - "System must generate 2-3 candidate architectures per spec section during draft phase"
+  - "System must evaluate each candidate against constraints during verify phase"
+  - "System must merge best candidate and store rejected alternatives with reasoning traces during commit phase"
+  - "System must communicate with models exclusively via Ollama on localhost"
+  - "System must store speculation results in SQLite using the Speculation model"
+  - "System must track rejected proposals with rejection reasons"
+constraints:
+  - "All inference via Ollama only"
+  - "Speculator model: qwen2.5-3b or compatible lightweight model"
+  - "Verifier model: nemotron-cascade-2-30b or compatible target model"
+  - "Committer model: llama3.2-8b or compatible general model"
+  - "Speculation results must be auditable"
+  - "No cloud APIs"
+acceptance_criteria:
+  - "Draft phase produces 2-3 architecture candidates for a spec section"
+  - "Verify phase produces constraint satisfaction scores for each candidate"
+  - "Commit phase selects best candidate and stores rejected ones"
+  - "Speculation record created in database with full trace"
+  - "All phases complete within reasonable timeout"
+dependencies:
+  - persistence-layer
+  - neuro-symbolic-kg
+test_cases:
+  - id: SPECULATE-001
+    description: "Basic speculation pipeline"
+    given: "A spec with architecture section"
+    when: "POST /api/v2/specs/{id}/speculate with section_id"
+    then: "Returns candidates with descriptions and constraint scores"
+  - id: SPECULATE-002
+    description: "Rejected proposal storage"
+    given: "Architecture candidate that fails constraint check"
+    when: "Verify phase marks candidate as rejected"
+    then: "Candidate stored with rejection_reason and reasoning_trace"
+  - id: SPECULATE-003
+    description: "Multi-candidate generation"
+    given: "Spec section requiring architecture decision"
+    when: "Draft phase runs"
+    then: "Returns 2-3 distinct candidates"
+tags:
+  - ai
+  - speculative
+  - reasoning
+  - ollama

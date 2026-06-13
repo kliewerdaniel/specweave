@@ -1,0 +1,72 @@
+id: core-engine
+title: SpecWeave Core Engine
+version: 2.0.0
+status: draft
+purpose: "Core FastAPI application providing the API layer, data models, JWT authentication, health checks, and orchestration for the 7-layer SpecWeave engine."
+requirements:
+  - "System must provide FastAPI application with JWT authentication on all endpoints except /health"
+  - "System must provide CRUD endpoints for specs including list, create, get, compile, speculate, verify, and gates"
+  - "System must provide spec delegation management endpoints"
+  - "System must provide graph and audit trail query endpoints"
+  - "System must provide a health check endpoint at /api/v2/health"
+  - "System must define data models for Spec, VerificationGate, Speculation, Delegation, and AuditRecord"
+  - "System must implement all handlers as async functions"
+  - "System must use type hints on every function signature"
+  - "System must produce an audit record for every action"
+constraints:
+  - "FastAPI 0.115+ only"
+  - "Pydantic v2 for all request/response models"
+  - "JWT auth via python-jose + passlib"
+  - "All secrets via environment variables"
+  - "Zero cloud dependencies"
+  - "No ORM for core data stores"
+acceptance_criteria:
+  - "GET /api/v2/health returns 200 with status ok"
+  - "POST /api/v2/specs creates a new spec from .sspec content"
+  - "GET /api/v2/specs lists all specs with status"
+  - "GET /api/v2/specs/{spec_id} returns spec detail with graph and verification"
+  - "POST /api/v2/specs/{spec_id}/compile triggers compilation pipeline"
+  - "POST /api/v2/specs/{spec_id}/speculate drafts alternatives"
+  - "POST /api/v2/specs/{spec_id}/verify runs neuro-symbolic verification"
+  - "GET /api/v2/specs/{spec_id}/gates returns gate statuses"
+  - "GET /api/v2/specs/{spec_id}/delegates lists delegations"
+  - "GET /api/v2/specs/{spec_id}/graph returns adjacency list"
+  - "GET /api/v2/specs/{spec_id}/audit returns audit trail"
+  - "Unauthenticated requests return 401"
+  - "Invalid spec data returns 422"
+dependencies:
+  - persistence-layer
+  - speculative-reasoning
+  - neuro-symbolic-kg
+  - self-verifying-compiler
+  - a2a-mcp-gateway
+test_cases:
+  - id: HEALTH-001
+    description: "Health check returns OK"
+    given: "Server is running"
+    when: "GET /api/v2/health"
+    then: "Response status 200 with status ok"
+  - id: AUTH-001
+    description: "Unauthenticated request returns 401"
+    given: "No JWT token provided"
+    when: "GET /api/v2/specs"
+    then: "Response status 401"
+  - id: SPEC-001
+    description: "Create spec from valid .sspec content"
+    given: "Valid .sspec YAML content"
+    when: "POST /api/v2/specs with JWT token"
+    then: "Response status 201 with spec object"
+  - id: SPEC-002
+    description: "Get non-existent spec returns 404"
+    given: "No spec with id nonexistent"
+    when: "GET /api/v2/specs/nonexistent"
+    then: "Response status 404"
+security_requirements:
+  - "JWT-based authentication on all endpoints except /health"
+  - "Tokens validated on every request"
+  - "Secrets loaded from environment variables only"
+tags:
+  - core
+  - api
+  - fastapi
+  - auth

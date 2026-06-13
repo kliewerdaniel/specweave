@@ -1,0 +1,58 @@
+id: neuro-symbolic-kg
+title: Neuro-Symbolic Knowledge Graph
+version: 2.0.0
+status: draft
+purpose: "Hybrid reasoning layer where neural generation meets symbolic validation. NetworkX runs deterministic constraint checks over neural-generated spec content. ChromaDB provides semantic consistency checks."
+requirements:
+  - "System must maintain a NetworkX knowledge graph with 11 node types and 9 edge types"
+  - "System must run symbolic constraint queries: no_circular_dependencies, every_endpoint_has_auth, no_unresolved_dependencies, constraint_satisfaction"
+  - "System must use ChromaDB vector store for semantic consistency checks"
+  - "System must provide neural layer for semantic_contradiction_detection, intent_alignment_scoring, and architectural_coherence_check"
+  - "System must implement a hybrid loop where neural generates, symbolic validates, and neural revises on failure"
+  - "System must use nomic-embed-text for all embeddings"
+constraints:
+  - "NetworkX 3.3+ for graph engine"
+  - "ChromaDB 0.5+ for vector store"
+  - "Node types: spec_section, module, api_endpoint, data_model, constraint, dependency, agent, verification_gate, rejected_proposal, audit_record, persona"
+  - "Edge types: depends_on, validates, generates, delegates_to, contradicts, satisfies, evolves_from, verifies, rejects"
+  - "All constraint queries must be deterministic with no AI inference for symbolic checks"
+  - "No cloud APIs"
+acceptance_criteria:
+  - "Graph initializes with all 11 node types available"
+  - "circular_dependency check detects cycles in graph"
+  - "endpoint_auth check verifies all endpoints have auth edges"
+  - "constraint_satisfaction check verifies all constraints satisfied"
+  - "Semantic contradiction detection returns conflicts if found"
+  - "Hybrid loop retries neural generation after symbolic failure"
+  - "Graph queries return correct adjacency lists"
+dependencies:
+  - persistence-layer
+test_cases:
+  - id: KG-001
+    description: "Circular dependency detection"
+    given: "Graph with A depends on B, B depends on C, C depends on A"
+    when: "Run no_circular_dependencies query"
+    then: "Returns cycle detected with path A to B to C to A"
+  - id: KG-002
+    description: "Endpoint auth verification"
+    given: "Graph with api_endpoint node without auth_gate edge"
+    when: "Run every_endpoint_has_auth query"
+    then: "Returns list of endpoints missing auth"
+  - id: KG-003
+    description: "Semantic contradiction detection"
+    given: "Two spec sections with contradictory requirements"
+    when: "Run semantic_contradiction_detection"
+    then: "Returns contradiction with relevant sections"
+  - id: KG-004
+    description: "Hybrid revision loop"
+    given: "Neural-generated spec section failing symbolic validation"
+    when: "Neural prompted to revise"
+    then: "Produces revised version passing symbolic checks"
+security_requirements:
+  - "Graph query endpoints must require authentication"
+  - "No sensitive data stored in graph nodes"
+tags:
+  - neuro-symbolic
+  - knowledge-graph
+  - networkx
+  - ai

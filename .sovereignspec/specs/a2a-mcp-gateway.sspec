@@ -1,0 +1,68 @@
+id: a2a-mcp-gateway
+title: A2A/MCP Agent Gateway
+version: 2.0.0
+status: draft
+purpose: "Local A2A (Agent-to-Agent) and MCP (Model Context Protocol) server enabling other agents to discover specs, request sub-spec delegation, submit completed work, and query the spec graph for impact analysis."
+requirements:
+  - "System must provide A2A endpoint GET /a2a/specs for spec discovery"
+  - "System must provide A2A endpoint POST /a2a/delegate for sub-spec delegation requests"
+  - "System must provide A2A endpoint POST /a2a/submit for completed sub-spec submissions"
+  - "System must provide MCP endpoint GET /mcp/tools for listing available tools"
+  - "System must provide MCP endpoint POST /mcp/execute for executing tools"
+  - "System must support capabilities: spec_discovery, sub_spec_delegation, sub_spec_submission, graph_query, impact_analysis, verification_status"
+  - "System must track delegation status with values pending, accepted, completed, and failed"
+  - "System must query the spec graph for dependency chains during impact analysis"
+constraints:
+  - "A2A protocol version 1.0"
+  - "MCP protocol standard"
+  - "All communication via localhost HTTP"
+  - "Delegation results stored in SQLite"
+  - "No cloud APIs"
+acceptance_criteria:
+  - "GET /a2a/specs returns list of discoverable specs"
+  - "POST /a2a/delegate creates delegation record and returns delegation ID"
+  - "POST /a2a/submit accepts completed sub-spec and updates status"
+  - "GET /mcp/tools returns list of available MCP tools"
+  - "POST /mcp/execute runs specified tool and returns result"
+  - "Impact analysis on spec change returns affected dependents"
+  - "Delegation status transitions tracked in audit log"
+dependencies:
+  - persistence-layer
+  - neuro-symbolic-kg
+test_cases:
+  - id: A2A-001
+    description: "Spec discovery"
+    given: "Server with registered specs"
+    when: "GET /a2a/specs"
+    then: "Returns list of specs with IDs and statuses"
+  - id: A2A-002
+    description: "Sub-spec delegation"
+    given: "Valid delegation request with sub-spec content"
+    when: "POST /a2a/delegate"
+    then: "Returns delegation ID with status pending"
+  - id: A2A-003
+    description: "Completed sub-spec submission"
+    given: "Valid delegation ID and completed content"
+    when: "POST /a2a/submit"
+    then: "Delegation status updated to completed"
+  - id: MCP-001
+    description: "Tool listing"
+    given: "Server with registered MCP tools"
+    when: "GET /mcp/tools"
+    then: "Returns tool list with names and descriptions"
+  - id: MCP-002
+    description: "Tool execution"
+    given: "Valid tool name and parameters"
+    when: "POST /mcp/execute"
+    then: "Returns tool execution result"
+  - id: IMPACT-001
+    description: "Impact analysis"
+    given: "Spec graph with dependencies"
+    when: "Query impact for spec change"
+    then: "Returns list of affected dependent specs"
+tags:
+  - a2a
+  - mcp
+  - agent
+  - protocol
+  - gateway
