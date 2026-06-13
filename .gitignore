@@ -1,0 +1,11 @@
+/.venv/
+__pycache__/
+*.pyc
+*.egg-info/
+.sovereignspec/memory/
+dist/
+build/
+
+# Environment
+.env
+*.log

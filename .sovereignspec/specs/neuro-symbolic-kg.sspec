@@ -1,7 +1,7 @@
 id: neuro-symbolic-kg
 title: Neuro-Symbolic Knowledge Graph
 version: 2.0.0
-status: draft
+status: verified
 purpose: "Hybrid reasoning layer where neural generation meets symbolic validation. NetworkX runs deterministic constraint checks over neural-generated spec content. ChromaDB provides semantic consistency checks."
 requirements:
   - "System must maintain a NetworkX knowledge graph with 11 node types and 9 edge types"

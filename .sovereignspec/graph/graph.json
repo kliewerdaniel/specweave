@@ -1,13 +1,13 @@
 {
   "nodes": [
     {"id": "proj-specweave", "type": "Project", "name": "SpecWeave", "version": "2.0.0"},
-    {"id": "spec-core-engine", "type": "Specification", "name": "Core Engine", "file": "core-engine.sspec"},
-    {"id": "spec-persistence-layer", "type": "Specification", "name": "Persistence Layer", "file": "persistence-layer.sspec"},
-    {"id": "spec-speculative-reasoning", "type": "Specification", "name": "Speculative Reasoning", "file": "speculative-reasoning.sspec"},
-    {"id": "spec-neuro-symbolic-kg", "type": "Specification", "name": "Neuro-Symbolic KG", "file": "neuro-symbolic-kg.sspec"},
-    {"id": "spec-self-verifying-compiler", "type": "Specification", "name": "Self-Verifying Compiler", "file": "self-verifying-compiler.sspec"},
-    {"id": "spec-a2a-mcp-gateway", "type": "Specification", "name": "A2A/MCP Gateway", "file": "a2a-mcp-gateway.sspec"},
-    {"id": "spec-interface-layer", "type": "Specification", "name": "Interface Layer", "file": "interface-layer.sspec"},
+    {"id": "spec-core-engine", "type": "Specification", "name": "Core Engine", "file": "core-engine.sspec", "status": "verified"},
+    {"id": "spec-persistence-layer", "type": "Specification", "name": "Persistence Layer", "file": "persistence-layer.sspec", "status": "verified"},
+    {"id": "spec-speculative-reasoning", "type": "Specification", "name": "Speculative Reasoning", "file": "speculative-reasoning.sspec", "status": "verified"},
+    {"id": "spec-neuro-symbolic-kg", "type": "Specification", "name": "Neuro-Symbolic KG", "file": "neuro-symbolic-kg.sspec", "status": "verified"},
+    {"id": "spec-self-verifying-compiler", "type": "Specification", "name": "Self-Verifying Compiler", "file": "self-verifying-compiler.sspec", "status": "verified"},
+    {"id": "spec-a2a-mcp-gateway", "type": "Specification", "name": "A2A/MCP Gateway", "file": "a2a-mcp-gateway.sspec", "status": "verified"},
+    {"id": "spec-interface-layer", "type": "Specification", "name": "Interface Layer", "file": "interface-layer.sspec", "status": "active"},
     {"id": "mod-src-specweave-main", "type": "Module", "name": "FastAPI Application", "path": "src/specweave/main.py"},
     {"id": "mod-src-specweave-config", "type": "Module", "name": "Configuration", "path": "src/specweave/config.py"},
     {"id": "mod-src-specweave-auth", "type": "Module", "name": "JWT Authentication", "path": "src/specweave/auth.py"},
@@ -21,6 +21,9 @@
     {"id": "mod-src-specweave-compiler", "type": "Module", "name": "Compiler Pipeline", "path": "src/specweave/compiler/pipeline.py"},
     {"id": "mod-src-specweave-a2a", "type": "Module", "name": "A2A Handler", "path": "src/specweave/gateway/a2a.py"},
     {"id": "mod-src-specweave-mcp", "type": "Module", "name": "MCP Handler", "path": "src/specweave/gateway/mcp.py"},
+    {"id": "mod-src-specweave-specs-api", "type": "Module", "name": "Specs API Routes", "path": "src/specweave/api/specs.py"},
+    {"id": "mod-src-specweave-gateway-api", "type": "Module", "name": "Gateway API Routes", "path": "src/specweave/api/gateway.py"},
+    {"id": "mod-src-specweave-health-api", "type": "Module", "name": "Health API", "path": "src/specweave/api/health.py"},
     {"id": "ep-health", "type": "Endpoint", "method": "GET", "path": "/api/v2/health"},
     {"id": "ep-list-specs", "type": "Endpoint", "method": "GET", "path": "/api/v2/specs"},
     {"id": "ep-create-spec", "type": "Endpoint", "method": "POST", "path": "/api/v2/specs"},
@@ -37,7 +40,12 @@
     {"id": "ep-a2a-delegate", "type": "Endpoint", "method": "POST", "path": "/api/v2/a2a/delegate"},
     {"id": "ep-a2a-submit", "type": "Endpoint", "method": "POST", "path": "/api/v2/a2a/submit"},
     {"id": "ep-mcp-tools", "type": "Endpoint", "method": "GET", "path": "/api/v2/mcp/tools"},
-    {"id": "ep-mcp-execute", "type": "Endpoint", "method": "POST", "path": "/api/v2/mcp/execute"}
+    {"id": "ep-mcp-execute", "type": "Endpoint", "method": "POST", "path": "/api/v2/mcp/execute"},
+    {"id": "adr-001", "type": "ADR", "name": "7-Layer Architecture", "path": ".sovereignspec/adr/ADR-001.md"},
+    {"id": "adr-002", "type": "ADR", "name": "Self-Verifying Compiler with 6 Sequential Gates", "path": ".sovereignspec/adr/ADR-002.md"},
+    {"id": "adr-003", "type": "ADR", "name": "Neuro-Symbolic Hybrid Loop", "path": ".sovereignspec/adr/ADR-003.md"},
+    {"id": "adr-004", "type": "ADR", "name": "A2A/MCP Gateway for Agent Federation", "path": ".sovereignspec/adr/ADR-004.md"},
+    {"id": "doc-readme", "type": "Document", "name": "README", "path": "README.md"}
   ],
   "edges": [
     {"source": "proj-specweave", "target": "spec-core-engine", "type": "has_spec"},
@@ -51,6 +59,9 @@
     {"source": "spec-core-engine", "target": "mod-src-specweave-config", "type": "generates"},
     {"source": "spec-core-engine", "target": "mod-src-specweave-auth", "type": "generates"},
     {"source": "spec-core-engine", "target": "mod-src-specweave-models", "type": "generates"},
+    {"source": "spec-core-engine", "target": "mod-src-specweave-specs-api", "type": "generates"},
+    {"source": "spec-core-engine", "target": "mod-src-specweave-gateway-api", "type": "generates"},
+    {"source": "spec-core-engine", "target": "mod-src-specweave-health-api", "type": "generates"},
     {"source": "spec-persistence-layer", "target": "mod-src-specweave-sqlite", "type": "generates"},
     {"source": "spec-persistence-layer", "target": "mod-src-specweave-vector", "type": "generates"},
     {"source": "spec-persistence-layer", "target": "mod-src-specweave-graph", "type": "generates"},
@@ -89,6 +100,15 @@
     {"source": "spec-core-engine", "target": "spec-neuro-symbolic-kg", "type": "depends_on"},
     {"source": "spec-core-engine", "target": "spec-self-verifying-compiler", "type": "depends_on"},
     {"source": "spec-core-engine", "target": "spec-a2a-mcp-gateway", "type": "depends_on"},
-    {"source": "spec-interface-layer", "target": "spec-core-engine", "type": "depends_on"}
+    {"source": "spec-interface-layer", "target": "spec-core-engine", "type": "depends_on"},
+    {"source": "spec-core-engine", "target": "adr-001", "type": "references"},
+    {"source": "spec-self-verifying-compiler", "target": "adr-002", "type": "references"},
+    {"source": "spec-neuro-symbolic-kg", "target": "adr-003", "type": "references"},
+    {"source": "spec-a2a-mcp-gateway", "target": "adr-004", "type": "references"},
+    {"source": "proj-specweave", "target": "doc-readme", "type": "generates"},
+    {"source": "proj-specweave", "target": "adr-001", "type": "has_adr"},
+    {"source": "proj-specweave", "target": "adr-002", "type": "has_adr"},
+    {"source": "proj-specweave", "target": "adr-003", "type": "has_adr"},
+    {"source": "proj-specweave", "target": "adr-004", "type": "has_adr"}
   ]
 }

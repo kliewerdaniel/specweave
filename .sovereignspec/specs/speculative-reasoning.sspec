@@ -1,7 +1,7 @@
 id: speculative-reasoning
 title: Speculative Reasoning Engine
 version: 2.0.0
-status: draft
+status: verified
 purpose: "Drafts alternative architectures using a lightweight speculator model, verifies each candidate against constraints, and commits the best candidate. Rejected alternatives stored with full reasoning traces."
 requirements:
   - "System must implement a three-phase pipeline with draft, verify, and commit phases"

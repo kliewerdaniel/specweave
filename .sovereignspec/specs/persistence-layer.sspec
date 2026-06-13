@@ -1,7 +1,7 @@
 id: persistence-layer
 title: Persistence Layer
 version: 2.0.0
-status: draft
+status: verified
 purpose: "Local-first data storage layer using SQLite for structured metadata, ChromaDB for vector embeddings and semantic search, and NetworkX for the spec knowledge graph."
 requirements:
   - "System must initialize SQLite database with tables for spec metadata, audit records, and gate statuses"

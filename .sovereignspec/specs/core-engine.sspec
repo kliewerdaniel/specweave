@@ -1,7 +1,7 @@
 id: core-engine
 title: SpecWeave Core Engine
 version: 2.0.0
-status: draft
+status: verified
 purpose: "Core FastAPI application providing the API layer, data models, JWT authentication, health checks, and orchestration for the 7-layer SpecWeave engine."
 requirements:
   - "System must provide FastAPI application with JWT authentication on all endpoints except /health"

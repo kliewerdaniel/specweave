@@ -1,7 +1,7 @@
 id: a2a-mcp-gateway
 title: A2A/MCP Agent Gateway
 version: 2.0.0
-status: draft
+status: verified
 purpose: "Local A2A (Agent-to-Agent) and MCP (Model Context Protocol) server enabling other agents to discover specs, request sub-spec delegation, submit completed work, and query the spec graph for impact analysis."
 requirements:
   - "System must provide A2A endpoint GET /a2a/specs for spec discovery"
