@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from specweave.auth import get_current_user
+from specweave.trust import AgentIdentity, get_current_agent
 from specweave.gateway import A2AHandler, MCPHandler
 from specweave.models.spec import (
     A2ADelegationRequest,
@@ -33,7 +33,7 @@ def _get_mcp(db: SQLiteStore) -> MCPHandler:
 
 @router.get("/a2a/specs", response_model=A2ASpecListResponse)
 async def a2a_discover(
-    user: str = Depends(get_current_user),
+    agent: AgentIdentity = Depends(get_current_agent),
     db: SQLiteStore = Depends(_get_db),
 ) -> A2ASpecListResponse:
     specs = _get_a2a(db).discover_specs()
@@ -43,7 +43,7 @@ async def a2a_discover(
 @router.post("/a2a/delegate", response_model=A2ADelegationResponse)
 async def a2a_delegate(
     req: A2ADelegationRequest,
-    user: str = Depends(get_current_user),
+    agent: AgentIdentity = Depends(get_current_agent),
     db: SQLiteStore = Depends(_get_db),
 ) -> A2ADelegationResponse:
     delegation = _get_a2a(db).delegate(req.spec_id, req.sub_spec_content, req.target_agent)
@@ -53,7 +53,7 @@ async def a2a_delegate(
 @router.post("/a2a/submit", response_model=A2ASubmissionResponse)
 async def a2a_submit(
     req: A2ASubmissionRequest,
-    user: str = Depends(get_current_user),
+    agent: AgentIdentity = Depends(get_current_agent),
     db: SQLiteStore = Depends(_get_db),
 ) -> A2ASubmissionResponse:
     result = _get_a2a(db).submit(req.delegation_id, req.result)
@@ -64,7 +64,7 @@ async def a2a_submit(
 
 @router.get("/mcp/tools", response_model=MCPToolListResponse)
 async def mcp_tools(
-    user: str = Depends(get_current_user),
+    agent: AgentIdentity = Depends(get_current_agent),
     db: SQLiteStore = Depends(_get_db),
 ) -> MCPToolListResponse:
     tools = _get_mcp(db).list_tools()
@@ -74,7 +74,7 @@ async def mcp_tools(
 @router.post("/mcp/execute", response_model=MCPExecuteResponse)
 async def mcp_execute(
     req: MCPExecuteRequest,
-    user: str = Depends(get_current_user),
+    agent: AgentIdentity = Depends(get_current_agent),
     db: SQLiteStore = Depends(_get_db),
 ) -> MCPExecuteResponse:
     try:

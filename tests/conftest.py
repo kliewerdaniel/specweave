@@ -19,9 +19,9 @@ from specweave.persistence import GraphStore, SQLiteStore, VectorStore
 def patch_settings(tmp_path: Path) -> None:
     settings.sqlite_path = tmp_path / "test.db"
     settings.chroma_path = str(tmp_path / "chroma")
-    settings.secret_key = "test-secret-key"
-    settings.jwt_algorithm = "HS256"
-    settings.jwt_expire_minutes = 60
+    settings.data_dir = tmp_path / ".sovereignspec"
+    agents_dir = settings.data_dir / "agents" / "test-agent"
+    agents_dir.mkdir(parents=True, exist_ok=True)
 
 
 @pytest_asyncio.fixture
@@ -67,6 +67,4 @@ def mock_ollama_client() -> MagicMock:
 
 @pytest.fixture
 def auth_headers() -> dict[str, str]:
-    from specweave.auth import create_access_token
-    token = create_access_token("test-user")
-    return {"Authorization": f"Bearer {token}"}
+    return {"X-Agent-Id": "test-agent"}

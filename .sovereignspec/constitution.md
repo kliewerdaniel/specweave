@@ -7,7 +7,7 @@
 - Vector Store: ChromaDB
 - Knowledge Graph: NetworkX
 - Validation: Pydantic v2
-- Auth: JWT (python-jose + passlib)
+- Auth: Filesystem-based trust (X-Agent-Id header)
 - LLM Client: ollama-python
 - Testing: pytest + httpx
 

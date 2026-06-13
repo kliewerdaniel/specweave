@@ -14,10 +14,6 @@ class Settings(BaseSettings):
     host: str = "0.0.0.0"
     port: int = 8000
 
-    secret_key: str = "change-me-in-production"
-    jwt_algorithm: str = "HS256"
-    jwt_expire_minutes: int = 60
-
     ollama_host: str = "http://localhost:11434"
     ollama_timeout: int = 120
 

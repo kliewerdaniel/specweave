@@ -6,7 +6,7 @@ from uuid import uuid4
 
 from fastapi import APIRouter, Depends, HTTPException, Request, status
 
-from specweave.auth import get_current_user
+from specweave.trust import AgentIdentity, get_current_agent
 from specweave.compiler import CompilerPipeline
 from specweave.gateway import A2AHandler
 from specweave.models.spec import (
@@ -83,7 +83,7 @@ def _build_spec_from_request(req: SpecCreateRequest) -> Spec:
 
 @router.get("/specs", response_model=SpecListResponse)
 async def list_specs(
-    user: str = Depends(get_current_user),
+    agent: AgentIdentity = Depends(get_current_agent),
     db: SQLiteStore = Depends(_get_db),
 ) -> SpecListResponse:
     specs_data = db.list_specs()
@@ -94,7 +94,7 @@ async def list_specs(
 @router.post("/specs", response_model=SpecResponse, status_code=status.HTTP_201_CREATED)
 async def create_spec(
     req: SpecCreateRequest,
-    user: str = Depends(get_current_user),
+    agent: AgentIdentity = Depends(get_current_agent),
     db: SQLiteStore = Depends(_get_db),
     graph: GraphStore = Depends(_get_graph_store),
 ) -> SpecResponse:
@@ -115,7 +115,7 @@ async def create_spec(
         "id": str(uuid4()),
         "spec_id": spec.id,
         "action": "create",
-        "actor": user,
+        "actor": agent.agent_id,
         "details": {"title": spec.project_title},
         "created_at": spec.created_at.isoformat(),
     })
@@ -126,7 +126,7 @@ async def create_spec(
 @router.get("/specs/{spec_id}", response_model=SpecDetailResponse)
 async def get_spec(
     spec_id: str,
-    user: str = Depends(get_current_user),
+    agent: AgentIdentity = Depends(get_current_agent),
     db: SQLiteStore = Depends(_get_db),
     graph: GraphStore = Depends(_get_graph_store),
 ) -> SpecDetailResponse:
@@ -145,7 +145,7 @@ async def get_spec(
 @router.post("/specs/{spec_id}/compile", response_model=CompilationResponse)
 async def compile_spec(
     spec_id: str,
-    user: str = Depends(get_current_user),
+    agent: AgentIdentity = Depends(get_current_agent),
     db: SQLiteStore = Depends(_get_db),
     graph: GraphStore = Depends(_get_graph_store),
 ) -> CompilationResponse:
@@ -168,7 +168,7 @@ async def compile_spec(
 async def speculate_spec(
     spec_id: str,
     req: SpeculateRequest,
-    user: str = Depends(get_current_user),
+    agent: AgentIdentity = Depends(get_current_agent),
     db: SQLiteStore = Depends(_get_db),
 ) -> SpeculationResponse:
     spec_data = db.get_spec(spec_id)
@@ -193,7 +193,7 @@ async def speculate_spec(
 @router.post("/specs/{spec_id}/verify", response_model=VerificationResponse)
 async def verify_spec(
     spec_id: str,
-    user: str = Depends(get_current_user),
+    agent: AgentIdentity = Depends(get_current_agent),
     db: SQLiteStore = Depends(_get_db),
     graph: GraphStore = Depends(_get_graph_store),
 ) -> VerificationResponse:
@@ -214,7 +214,7 @@ async def verify_spec(
         "id": str(uuid4()),
         "spec_id": spec_id,
         "action": "verify",
-        "actor": user,
+        "actor": agent.agent_id,
         "details": {"symbolic_results": symbolic_results, "neural_result": neural_result},
         "created_at": datetime.now(timezone.utc).isoformat(),
     })
@@ -229,7 +229,7 @@ async def verify_spec(
 @router.get("/specs/{spec_id}/gates", response_model=GateStatusResponse)
 async def get_gates(
     spec_id: str,
-    user: str = Depends(get_current_user),
+    agent: AgentIdentity = Depends(get_current_agent),
     db: SQLiteStore = Depends(_get_db),
 ) -> GateStatusResponse:
     gates = db.get_gates_for_spec(spec_id)
@@ -239,7 +239,7 @@ async def get_gates(
 @router.get("/specs/{spec_id}/delegates", response_model=DelegationListResponse)
 async def list_delegations(
     spec_id: str,
-    user: str = Depends(get_current_user),
+    agent: AgentIdentity = Depends(get_current_agent),
     db: SQLiteStore = Depends(_get_db),
 ) -> DelegationListResponse:
     delegations = db.get_delegations_for_spec(spec_id)
@@ -250,7 +250,7 @@ async def list_delegations(
 async def create_delegation(
     spec_id: str,
     req: DelegationRequest,
-    user: str = Depends(get_current_user),
+    agent: AgentIdentity = Depends(get_current_agent),
     db: SQLiteStore = Depends(_get_db),
 ) -> DelegationResponse:
     a2a = _get_a2a(db)
@@ -261,7 +261,7 @@ async def create_delegation(
 @router.get("/specs/{spec_id}/graph", response_model=GraphResponse)
 async def get_graph(
     spec_id: str,
-    user: str = Depends(get_current_user),
+    agent: AgentIdentity = Depends(get_current_agent),
     graph: GraphStore = Depends(_get_graph_store),
 ) -> GraphResponse:
     if not graph.has_node(spec_id):
@@ -273,7 +273,7 @@ async def get_graph(
 @router.get("/specs/{spec_id}/audit", response_model=AuditTrailResponse)
 async def get_audit_trail(
     spec_id: str,
-    user: str = Depends(get_current_user),
+    agent: AgentIdentity = Depends(get_current_agent),
     db: SQLiteStore = Depends(_get_db),
 ) -> AuditTrailResponse:
     records = db.get_audit_for_spec(spec_id)

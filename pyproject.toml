@@ -8,17 +8,19 @@ dependencies = [
     "uvicorn[standard]",
     "pydantic>=2.9",
     "pydantic-settings",
-    "python-jose[cryptography]>=3.3",
-    "passlib[bcrypt]>=1.7",
     "chromadb>=0.5",
     "networkx>=3.3",
     "ollama>=0.4",
     "pyyaml>=6.0",
     "httpx",
+    "click>=8.0",
 ]
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "pytest-asyncio", "httpx"]
+
+[project.scripts]
+specweave = "specweave.cli:cli"
 
 [build-system]
 requires = ["setuptools>=75"]
